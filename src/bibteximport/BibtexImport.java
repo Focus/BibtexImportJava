@@ -14,6 +14,9 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -23,6 +26,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import java.awt.FlowLayout;
 
 public class BibtexImport extends JPanel implements ActionListener{
 	/**
@@ -32,31 +36,23 @@ public class BibtexImport extends JPanel implements ActionListener{
 
 	private static JFrame frame;
 
-	private static JButton openButton, saveButton, searchButton, addButton;
+	private static JButton searchButton, addButton;
 	private BibtexTable local, remote;
 	private static String[] labels;
 	private static File openFile;
 	private JTextField searchAuthor, searchTitle;
+	private JMenuBar menu;
+	private JMenuItem newMenu, openMenu, saveMenu, saveAsMenu;
 
 	public BibtexImport(){
 		labels = new String[]{"name","type","title","author","year"};
-
-		openButton = new JButton("Open");
-		openButton.addActionListener(this);
-		saveButton = new JButton("Save");
-		saveButton.addActionListener(this);
-		saveButton.setMnemonic(KeyEvent.VK_S);
-		JPanel card1 = new JPanel();
-		card1.setLayout(new BoxLayout(card1, BoxLayout.Y_AXIS));
-		card1.add(openButton);
-		card1.add(saveButton);
 
 		searchAuthor = new JTextField();
 		searchAuthor.setColumns(17);
 		searchTitle = new JTextField();
 		searchTitle.setColumns(17);
 		JPanel searches = new JPanel();
-		searches.setLayout(new BoxLayout(searches, BoxLayout.Y_AXIS));
+		searches.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		searches.add(new JLabel("Author"));
 		searches.add(searchAuthor);
 		searches.add(new JLabel("Title"));
@@ -65,14 +61,11 @@ public class BibtexImport extends JPanel implements ActionListener{
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(this);
 		searchButton.setVerticalAlignment(SwingConstants.BOTTOM);
-		JPanel card2 = new JPanel();
-		card2.add(searches);
-		card2.add(searchButton);
 
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-		buttonPanel.add(card1);
-		buttonPanel.add(card2);
+		JPanel searchPanel = new JPanel();
+		searchPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		searchPanel.add(searches);
+		searchPanel.add(searchButton);
 
 
 
@@ -95,9 +88,9 @@ public class BibtexImport extends JPanel implements ActionListener{
 		remote.resetTable();
 
 		setLayout(new BorderLayout(0, 0));
-		add(buttonPanel, BorderLayout.PAGE_START);
+		add(searchPanel, BorderLayout.PAGE_START);
 		add(bigPanel, BorderLayout.CENTER);
-		
+
 		local.table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
 		local.table.getActionMap().put("delete", new AbstractAction(){
 			private static final long serialVersionUID = 1L;
@@ -107,7 +100,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				local.removeSelected();
 			}
 		});
-		
+
 		remote.table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");
 		remote.table.getActionMap().put("enter", new AbstractAction(){
 			private static final long serialVersionUID = 1L;
@@ -117,7 +110,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				addButton.doClick();
 			}
 		});
-		
+
 		searchTitle.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");
 		searchTitle.getActionMap().put("enter", new AbstractAction(){
 			private static final long serialVersionUID = 1L;
@@ -136,11 +129,16 @@ public class BibtexImport extends JPanel implements ActionListener{
 				searchButton.doClick();
 			}
 		});
+
+		createMenuBar();
 	}
-	
+
 
 	public void actionPerformed(ActionEvent action){
-		if(action.getSource() == openButton){
+		if(action.getSource() == newMenu){
+			local.flush();
+		}
+		else if(action.getSource() == openMenu){
 			JFileChooser fc = new JFileChooser();
 			fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
 			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
@@ -152,8 +150,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 				}
 			}	
 		}
-		else if (action.getSource() == saveButton){
-			if(openFile == null){
+		else if (action.getSource() == saveMenu || action.getSource() == saveAsMenu){
+			if(openFile == null || action.getSource() == saveAsMenu){
 				JFileChooser fc = new JFileChooser();
 				fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
@@ -163,7 +161,9 @@ public class BibtexImport extends JPanel implements ActionListener{
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-				}	
+				}
+				else 
+					return;
 			}
 			try {
 				local.saveFile(openFile);
@@ -179,7 +179,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 						+ URLEncoder.encode(searchAuthor.getText(),"UTF-8")
 						+ "&pg5=TI&s5="
 						+ URLEncoder.encode(searchTitle.getText(), "UTF-8")
-						+ "&fmt=bibtex";
+						+ "&fmt=bibtex&extend=1";
 				doc = Jsoup.connect(url).get();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -195,6 +195,30 @@ public class BibtexImport extends JPanel implements ActionListener{
 		}
 	}
 
+	private void createMenuBar(){
+		menu = new JMenuBar();
+
+		JMenu fileMenu = new JMenu("File");
+		newMenu = new JMenuItem("New");
+		newMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+		newMenu.addActionListener(this);
+		openMenu = new JMenuItem("Open");
+		openMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+		openMenu.addActionListener(this);
+		saveMenu = new JMenuItem("Save");
+		saveMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		saveMenu.addActionListener(this);
+		saveAsMenu = new JMenuItem("Save As...");
+		saveAsMenu.addActionListener(this);
+		fileMenu.add(newMenu);
+		fileMenu.add(openMenu);
+		fileMenu.add(saveMenu);
+		fileMenu.add(saveAsMenu);
+
+		menu.add(fileMenu);
+	}
+
+
 	private static void createGUI(){
 		frame = new JFrame("Bibtex Import");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -203,6 +227,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 		bib.setOpaque(true);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setContentPane(bib);
+		frame.setJMenuBar(bib.menu);
 		frame.pack();
 		frame.setVisible(true);
 	}

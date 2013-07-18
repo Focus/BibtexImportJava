@@ -48,11 +48,6 @@ public class BibtexTable implements TableModelListener {
 				citations.get(row).replaceString(labels[column], entry);
 			resetTable();
 			break;
-		
-		case TableModelEvent.DELETE:
-			//for(int i = tme.getFirstRow(); i < tme.getLastRow(); i++)
-				//citations.remove(i);
-			break;
 		}
 			
 	}
@@ -107,6 +102,11 @@ public class BibtexTable implements TableModelListener {
 			citations.remove(i-discount);
 			discount++;
 		}
+		this.resetTable();
+	}
+	
+	public void flush(){
+		citations.clear();
 		this.resetTable();
 	}
 }
