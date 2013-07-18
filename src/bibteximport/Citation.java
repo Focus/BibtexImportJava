@@ -46,14 +46,17 @@ public class Citation {
 	}
 	
 	public String asString(){
-		String ret ="@" + this.type + " { " + this.name + ",\n";
+		String ret ="@" + this.type + "{" + this.name + ",\n";
 		for(String[] prop : properties)
 			ret += "    " + prop[0] + " = {" + prop[1] + "},\n";
 		ret = ret.substring(0, ret.length() - 2);
 		ret += "\n}\n\n";
 		return ret;
 	}
-
+	/**
+	 * Parses one bibtex entry.
+	 * @param bib
+	 */
 
 	public void parse(String bib){
 		if(bib.lastIndexOf('}') == -1)

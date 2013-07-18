@@ -27,6 +27,8 @@ public class BibtexTable implements TableModelListener {
 		model.addTableModelListener(this);
 		table = new JTable(model);
 	}
+	
+
 
 	public void resetTable(){
 		model.setRowCount(0);
