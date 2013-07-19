@@ -61,7 +61,7 @@ public class Citation {
 	public void parse(String bib){
 		if(bib.lastIndexOf('}') == -1)
 			return;
-		bib = bib.substring(0,bib.lastIndexOf('}')-1);
+		bib = bib.substring(0,bib.lastIndexOf('}'));
 
 		int index, index2;
 		index = bib.indexOf('{');

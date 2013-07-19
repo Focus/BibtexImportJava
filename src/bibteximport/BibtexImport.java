@@ -38,7 +38,7 @@ import org.jsoup.nodes.Document;
 
 public class BibtexImport extends JPanel implements ActionListener{
 
-	private String VERSION = "1.0";
+	private String VERSION = "1.1";
 	/**
 	 * 
 	 */
@@ -189,7 +189,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 					edit = false;
 				} catch (IOException e) {
 					e.printStackTrace();
-					errorDialog(e.getMessage());
+					errorDialog(e.toString());
 				}
 			}	
 		}
@@ -205,7 +205,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 						edit = false;
 					} catch (IOException e) {
 						e.printStackTrace();
-						errorDialog(e.getMessage());
+						errorDialog(e.toString());
 					}
 				}
 				else 
@@ -217,7 +217,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				edit = false;
 			} catch (IOException e) {
 				e.printStackTrace();
-				errorDialog(e.getMessage());
+				errorDialog(e.toString());
 			}
 		}
 		else if (action.getSource() == searchButton){
@@ -232,7 +232,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				doc = Jsoup.connect(url).get();
 			} catch (IOException e) {
 				e.printStackTrace();
-				errorDialog(e.getMessage());
+				errorDialog(e.toString());
 				return;
 			}
 			remote.addCitations(doc.select("pre").html());
