@@ -38,7 +38,7 @@ import org.jsoup.nodes.Document;
 
 public class BibtexImport extends JPanel implements ActionListener{
 
-	private String VERSION = "0.1";
+	private String VERSION = "1.0";
 	/**
 	 * 
 	 */
