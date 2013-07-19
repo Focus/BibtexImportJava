@@ -5,12 +5,16 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.net.URLEncoder;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -24,6 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -32,7 +37,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 public class BibtexImport extends JPanel implements ActionListener{
-	
+
 	private String VERSION = "0.1";
 	/**
 	 * 
@@ -106,7 +111,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				local.removeSelected();
 			}
 		});
-		
+
 		local.model.addTableModelListener(new TableModelListener(){
 			@Override
 			public void tableChanged(TableModelEvent tme) {
@@ -145,17 +150,35 @@ public class BibtexImport extends JPanel implements ActionListener{
 			}
 		});
 
+		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		frame.addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent ev){
+				if(nagForSave())
+					frame.dispose();
+			}
+		});
+		URL imgURL = getClass().getResource("icon.png");
+		if(imgURL != null){
+			ImageIcon icon = new ImageIcon(imgURL);
+			frame.setIconImage(icon.getImage());
+		}
+		
+
 		createMenuBar();
 	}
 
 
 	public void actionPerformed(ActionEvent action){
 		if(action.getSource() == newMenu){
+			if(!nagForSave())
+				return;
 			local.flush();
 			edit = false;
 			frame.setTitle("Untitled");
 		}
 		else if(action.getSource() == openMenu){
+			if(!nagForSave())
+				return;
 			JFileChooser fc = new JFileChooser();
 			fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
 			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
@@ -166,6 +189,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 					edit = false;
 				} catch (IOException e) {
 					e.printStackTrace();
+					errorDialog(e.getMessage());
 				}
 			}	
 		}
@@ -181,6 +205,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 						edit = false;
 					} catch (IOException e) {
 						e.printStackTrace();
+						errorDialog(e.getMessage());
 					}
 				}
 				else 
@@ -192,6 +217,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				edit = false;
 			} catch (IOException e) {
 				e.printStackTrace();
+				errorDialog(e.getMessage());
 			}
 		}
 		else if (action.getSource() == searchButton){
@@ -205,7 +231,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 						+ "&fmt=bibtex&extend=1";
 				doc = Jsoup.connect(url).get();
 			} catch (IOException e) {
-				errorDialog(e.toString());
+				e.printStackTrace();
+				errorDialog(e.getMessage());
 				return;
 			}
 			remote.addCitations(doc.select("pre").html());
@@ -237,16 +264,16 @@ public class BibtexImport extends JPanel implements ActionListener{
 		fileMenu.add(openMenu);
 		fileMenu.add(saveMenu);
 		fileMenu.add(saveAsMenu);
-		
+
 		JMenu helpMenu = new JMenu("Help");
 		JMenuItem aboutMenuI = new JMenuItem("About");
 		aboutMenuI.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(frame,
 						"Bibtex Import\n"
-						+ "Copyright(c) Bati Sengul 2013\n"
-						+ "Version: " + VERSION
-						,"About",JOptionPane.INFORMATION_MESSAGE);
+								+ "Copyright(c) Bati Sengul 2013\n"
+								+ "Version: " + VERSION
+								,"About",JOptionPane.INFORMATION_MESSAGE);
 			}		
 		});
 		helpMenu.add(aboutMenuI);
@@ -254,24 +281,67 @@ public class BibtexImport extends JPanel implements ActionListener{
 		menu.add(fileMenu);
 		menu.add(helpMenu);
 	}
-	
+
 	private void errorDialog(String error){
 		JOptionPane.showMessageDialog(frame,error,"Error",JOptionPane.ERROR_MESSAGE);
+	}
+
+	private boolean nagForSave(){
+		if(edit){
+			String name = frame.getTitle();
+			if(name.length() > 1)
+				name = name.substring(1, name.length());
+			int res = JOptionPane.showConfirmDialog(frame, "Save changes to "+name+"?");
+			switch(res){
+			case JOptionPane.CANCEL_OPTION:
+				return false;
+			case JOptionPane.YES_OPTION:
+				if(openFile == null){
+					JFileChooser fc = new JFileChooser();
+					fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
+					if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+						try {
+							local.saveFile(fc.getSelectedFile());
+							openFile = fc.getSelectedFile();
+							frame.setTitle(openFile.getName());
+							edit = false;
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return true;
+					}
+					else 
+						return false;
+				}
+				try {
+					local.saveFile(openFile);
+					frame.setTitle(openFile.getName());
+					edit = false;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return true;
+			case JOptionPane.NO_OPTION:
+				return true;
+			}
+		}
+		return true;
 	}
 
 
 	private static void createGUI(){
 		frame = new JFrame("Untitled");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 		
 		BibtexImport bib = new BibtexImport();
 		bib.setOpaque(true);
+		
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setContentPane(bib);
 		frame.setJMenuBar(bib.menu);
 		frame.pack();
 		frame.setVisible(true);
-		
+
 	}
 
 	public static void main(String[] args) {
