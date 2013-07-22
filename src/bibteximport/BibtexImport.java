@@ -127,6 +127,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				local.removeSelected();
 			}
 		});
+		
 
 		local.model.addTableModelListener(new TableModelListener(){
 			@Override
@@ -136,6 +137,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				edit = true;
 			}
 		});
+		
 
 		remote.table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");
 		remote.table.getActionMap().put("enter", new AbstractAction(){
@@ -191,6 +193,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 			local.flush();
 			edit = false;
 			frame.setTitle("Untitled");
+			openFile = null;
 		}
 		else if(action.getSource() == openMenu){
 			if(!nagForSave())

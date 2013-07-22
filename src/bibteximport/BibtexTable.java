@@ -36,7 +36,7 @@ import javax.swing.table.DefaultTableModel;
 public class BibtexTable implements TableModelListener {
 
 	private String[] labels;
-	private Vector<Citation> citations;
+	public Vector<Citation> citations;
 	public DefaultTableModel model;
 	public JTable table;
 	public int order;
