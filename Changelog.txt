@@ -1,0 +1,4 @@
+Bati Sengul (c) 2013
+
+ == Changes from 1.0 to 1.1 ==
+ * Bug fix where the last bracket was missed when parsing bibtex entries.

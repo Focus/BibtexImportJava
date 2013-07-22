@@ -1,3 +1,19 @@
+/*
+ * Copyright 2013 Bati Sengul
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package bibteximport;
 
 
@@ -58,9 +74,9 @@ public class Citation {
 	 * @param bib
 	 */
 
-	public void parse(String bib){
+	public void parse (String bib) throws IllegalArgumentException{
 		if(bib.lastIndexOf('}') == -1)
-			return;
+			throw new IllegalArgumentException("Invalid syntax");
 		bib = bib.substring(0,bib.lastIndexOf('}'));
 
 		int index, index2;
@@ -71,7 +87,7 @@ public class Citation {
 			name = bib.substring(index + 1, index2);
 		}
 		else
-			return;
+			throw new IllegalArgumentException("Invalid syntax");
 		bib = bib.substring(index2 + 1);
 
 		while(bib.indexOf('{') != -1){
@@ -102,7 +118,7 @@ public class Citation {
 			bib = bib.substring(it);
 			index = bib.indexOf(',');
 			if(index == -1)
-				break;
+				throw new IllegalArgumentException("Invalid syntax");
 			bib = bib.substring(index + 1);
 		}
 	}
