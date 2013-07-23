@@ -54,7 +54,8 @@ import org.jsoup.nodes.Document;
 
 public class BibtexImport extends JPanel implements ActionListener{
 
-	private String VERSION = "1.2";
+	private String VERSION = "1.3";
+	private String WEBSITE = "https://sourceforge.net/projects/bibteximport/";
 	/**
 	 * 
 	 */
@@ -321,7 +322,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 				JOptionPane.showMessageDialog(frame,
 						"Bibtex Import\n"
 								+ "Copyright(c) Bati Sengul 2013\n"
-								+ "Version: " + VERSION
+								+ "Version: " + VERSION + "\n"
+								+ "Wesbite: " + WEBSITE
 								,"About",JOptionPane.INFORMATION_MESSAGE);
 			}		
 		});

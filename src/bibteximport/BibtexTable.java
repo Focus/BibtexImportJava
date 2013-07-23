@@ -101,7 +101,7 @@ public class BibtexTable implements TableModelListener {
 		if(bibStrings.length <= 0)
 			return;
 		citations.clear();
-		for(int i = 0; i < bibStrings.length; i++){
+		for(int i = 1; i < bibStrings.length; i++){
 			if(bibStrings[i] != null && bibStrings[i].length() > 0)
 				citations.add(new Citation(bibStrings[i]));
 		}

@@ -78,7 +78,21 @@ public class Citation {
 		String bib = parseIn;
 		if(bib.lastIndexOf('}') == -1)
 			throw new IllegalArgumentException(parseIn);
-		bib = bib.substring(0,bib.lastIndexOf('}'));
+		int balance, it;
+		balance = 1;
+		it = bib.indexOf('{') + 1;
+		if(it == -1)
+			throw new IllegalArgumentException(parseIn);
+		while(balance > 0){
+			if(it == bib.length())
+				throw new IllegalArgumentException(parseIn);
+			if(bib.charAt(it) == '{')
+				balance++;
+			else if(bib.charAt(it) == '}')
+				balance--;
+			it++;
+		}
+		bib = bib.substring(0,it-1);
 
 		int index, index2;
 		index = bib.indexOf('{');
@@ -103,15 +117,15 @@ public class Citation {
 				break;
 			bib = bib.substring(index + 1);
 
-			int balance = 1;
-			int it = 0;
+			balance = 1;
+			it = 0;
 			while(balance > 0){
+				if(it == bib.length())
+					throw new IllegalArgumentException(parseIn);
 				if(bib.charAt(it) == '{')
 					balance++;
 				else if(bib.charAt(it) == '}')
 					balance--;
-				if(it == bib.length()-1)
-					return;
 				it++;
 			}
 			prop[1] = bib.substring(0,it - 1);
@@ -119,7 +133,7 @@ public class Citation {
 			bib = bib.substring(it);
 			index = bib.indexOf(',');
 			if(index == -1)
-				throw new IllegalArgumentException(parseIn);
+				break;
 			bib = bib.substring(index + 1);
 		}
 	}
