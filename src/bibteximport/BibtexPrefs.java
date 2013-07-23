@@ -9,9 +9,10 @@ public class BibtexPrefs {
 	
 	public static void addOpenedFile(File file){
 		addOpenedFile(file.getPath());
+		saveLastDir(file);
 	}
 	
-	public static void addOpenedFile(String file){
+	private static void addOpenedFile(String file){
 		String[] files = getOpenedFiles();
 		String store = "";
 		for(int i = 0; i < Math.min(files.length,noOfStoredFiles); i++){
@@ -35,5 +36,21 @@ public class BibtexPrefs {
 		if(i >= 0 && i < file.length() -1)
 			return file.substring(i+1);
 		return file;
+	}
+	
+	public static File getLastDir(){
+		String path = prefs.get("lastDir", null);
+		if(path == null)
+			return null;
+		File dir = new File(path);
+		if(dir.exists() && dir.isDirectory())
+			return dir;
+		return null;
+	}
+	
+	public static void saveLastDir(File file){
+		File dir = file.getParentFile();
+		if(dir.exists() && dir.isDirectory())
+			prefs.put("lastDir", dir.getPath());
 	}
 }

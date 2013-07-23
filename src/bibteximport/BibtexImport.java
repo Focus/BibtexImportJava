@@ -196,7 +196,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 		else if(action.getSource() == openMenu){
 			if(!nagForSave())
 				return;
-			JFileChooser fc = new JFileChooser();
+			JFileChooser fc = new JFileChooser(BibtexPrefs.getLastDir());
 			fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
 			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
 				openFile = fc.getSelectedFile();
@@ -205,7 +205,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 		}
 		else if (action.getSource() == saveMenu || action.getSource() == saveAsMenu){
 			if(openFile == null || action.getSource() == saveAsMenu){
-				JFileChooser fc = new JFileChooser();
+				JFileChooser fc = new JFileChooser(BibtexPrefs.getLastDir());
 				fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
 				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
 					try {
@@ -271,6 +271,17 @@ public class BibtexImport extends JPanel implements ActionListener{
 			}
 		}
 	}
+	private void saveFile(File file){
+		try {
+			local.saveFile(file);
+			openFile = file;
+			populateRecentMenu();
+			frame.setTitle(openFile.getName());
+			edit = false;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private void openFile(File file){
 		try {
@@ -282,6 +293,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 		} catch (IOException e) {
 			e.printStackTrace();
 			errorDialog(e.toString());
+		} catch (IllegalArgumentException e){
+			errorDialog("The bibtex file " +file.getPath()+ " appears to be invalid");
 		}
 	}
 	
@@ -351,19 +364,10 @@ public class BibtexImport extends JPanel implements ActionListener{
 				return false;
 			case JOptionPane.YES_OPTION:
 				if(openFile == null){
-					JFileChooser fc = new JFileChooser();
+					JFileChooser fc = new JFileChooser(BibtexPrefs.getLastDir());
 					fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
 					if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
-						try {
-							local.saveFile(fc.getSelectedFile());
-							openFile = fc.getSelectedFile();
-							BibtexPrefs.addOpenedFile(openFile.getPath());
-							populateRecentMenu();
-							frame.setTitle(openFile.getName());
-							edit = false;
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						saveFile(fc.getSelectedFile());
 						return true;
 					}
 					else 

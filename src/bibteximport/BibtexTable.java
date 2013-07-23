@@ -83,7 +83,7 @@ public class BibtexTable implements TableModelListener {
 			
 	}
 	
-	public void openFile(File file) throws IOException{
+	public void openFile(File file) throws IOException, IllegalArgumentException{
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		StringBuilder sb = new StringBuilder();
 		String line = br.readLine();
@@ -96,7 +96,7 @@ public class BibtexTable implements TableModelListener {
 		this.addCitations(sb.toString());
 	}
 	
-	public void addCitations(String input){
+	public void addCitations(String input) throws IllegalArgumentException{
 		String[] bibStrings = input.toString().split("@");
 		if(bibStrings.length <= 0)
 			return;
