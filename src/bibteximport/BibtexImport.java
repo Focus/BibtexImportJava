@@ -68,6 +68,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 	private static File openFile;
 	private JTextField searchAuthor, searchTitle;
 	private JMenuBar menu;
+	private JMenu recentMenu;
+	private JMenuItem[] recentMenuItems;
 	private JMenuItem newMenu, openMenu, saveMenu, saveAsMenu;
 	private boolean edit = false;
 
@@ -93,8 +95,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 		searchPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		searchPanel.add(searches);
 		searchPanel.add(searchButton);
-
-
 
 		local = new BibtexTable(labels);
 		JScrollPane localScroll = new JScrollPane(local.table);
@@ -180,8 +180,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 			ImageIcon icon = new ImageIcon(imgURL);
 			frame.setIconImage(icon.getImage());
 		}
-		
-
 		createMenuBar();
 	}
 
@@ -202,14 +200,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 			fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
 			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
 				openFile = fc.getSelectedFile();
-				try {
-					local.openFile(openFile);
-					frame.setTitle(openFile.getName());
-					edit = false;
-				} catch (IOException e) {
-					e.printStackTrace();
-					errorDialog(e.toString());
-				}
+				openFile(openFile);
 			}	
 		}
 		else if (action.getSource() == saveMenu || action.getSource() == saveAsMenu){
@@ -220,6 +211,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 					try {
 						local.saveFile(fc.getSelectedFile());
 						openFile = fc.getSelectedFile();
+						BibtexPrefs.addOpenedFile(openFile);
+						populateRecentMenu();
 						frame.setTitle(openFile.getName());
 						edit = false;
 					} catch (IOException e) {
@@ -262,6 +255,45 @@ public class BibtexImport extends JPanel implements ActionListener{
 				local.add(remote.citeAt(i));
 			local.resetTable();
 		}
+		else{
+			Object obj = action.getSource();
+			for(JMenuItem jmi : recentMenuItems){
+				if(obj == jmi){
+					if(!nagForSave())
+						return;
+					File file = new File(jmi.getText());
+					if(file.exists())
+						openFile(file);
+					else
+						errorDialog("The file " + jmi.getText() + " does not exist!");
+					return;
+				}
+			}
+		}
+	}
+	
+	private void openFile(File file){
+		try {
+			local.openFile(file);
+			frame.setTitle(file.getName());
+			edit = false;
+			BibtexPrefs.addOpenedFile(file);
+			populateRecentMenu();
+		} catch (IOException e) {
+			e.printStackTrace();
+			errorDialog(e.toString());
+		}
+	}
+	
+	private void populateRecentMenu(){
+		recentMenu.removeAll();
+		String[] files = BibtexPrefs.getOpenedFiles();
+		recentMenuItems = new JMenuItem[files.length];
+		for(int i = 0; i < files.length; i++){
+			recentMenuItems[i] = new JMenuItem(files[i]);
+			recentMenuItems[i].addActionListener(this);
+			recentMenu.add(recentMenuItems[i]);
+		}
 	}
 
 	private void createMenuBar(){
@@ -274,6 +306,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 		openMenu = new JMenuItem("Open");
 		openMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		openMenu.addActionListener(this);
+		recentMenu = new JMenu("Open Recent");
+		populateRecentMenu();
 		saveMenu = new JMenuItem("Save");
 		saveMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
 		saveMenu.addActionListener(this);
@@ -281,6 +315,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 		saveAsMenu.addActionListener(this);
 		fileMenu.add(newMenu);
 		fileMenu.add(openMenu);
+		fileMenu.add(recentMenu);
 		fileMenu.add(saveMenu);
 		fileMenu.add(saveAsMenu);
 
@@ -322,6 +357,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 						try {
 							local.saveFile(fc.getSelectedFile());
 							openFile = fc.getSelectedFile();
+							BibtexPrefs.addOpenedFile(openFile.getPath());
+							populateRecentMenu();
 							frame.setTitle(openFile.getName());
 							edit = false;
 						} catch (IOException e) {
