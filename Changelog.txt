@@ -1,4 +1,10 @@
 Bati Sengul (c) 2013
 
+== Changes from 1.1 to 1.2 ==
+* Feature: remembers the latest opened files.
+* Feature: uses the last directory user acted within to open/save files.
+* Feature: sorts through the tables when clicked on the column header.
+* Bug fix where new file caused you to save over the last opened file.
+
  == Changes from 1.0 to 1.1 ==
  * Bug fix where the last bracket was missed when parsing bibtex entries.

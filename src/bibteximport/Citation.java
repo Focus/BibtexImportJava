@@ -74,9 +74,10 @@ public class Citation {
 	 * @param bib
 	 */
 
-	public void parse (String bib) throws IllegalArgumentException{
+	public void parse (String parseIn) throws IllegalArgumentException{
+		String bib = parseIn;
 		if(bib.lastIndexOf('}') == -1)
-			throw new IllegalArgumentException("Invalid syntax");
+			throw new IllegalArgumentException(parseIn);
 		bib = bib.substring(0,bib.lastIndexOf('}'));
 
 		int index, index2;
@@ -87,7 +88,7 @@ public class Citation {
 			name = bib.substring(index + 1, index2);
 		}
 		else
-			throw new IllegalArgumentException("Invalid syntax");
+			throw new IllegalArgumentException(parseIn);
 		bib = bib.substring(index2 + 1);
 
 		while(bib.indexOf('{') != -1){
@@ -118,7 +119,7 @@ public class Citation {
 			bib = bib.substring(it);
 			index = bib.indexOf(',');
 			if(index == -1)
-				throw new IllegalArgumentException("Invalid syntax");
+				throw new IllegalArgumentException(parseIn);
 			bib = bib.substring(index + 1);
 		}
 	}

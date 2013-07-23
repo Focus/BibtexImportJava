@@ -102,7 +102,7 @@ public class BibtexTable implements TableModelListener {
 			return;
 		citations.clear();
 		for(int i = 0; i < bibStrings.length; i++){
-			if(!bibStrings[i].isEmpty() && bibStrings[i] != "")
+			if(bibStrings[i] != null && bibStrings[i].length() > 0)
 				citations.add(new Citation(bibStrings[i]));
 		}
 		this.resetTable();

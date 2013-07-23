@@ -54,7 +54,7 @@ import org.jsoup.nodes.Document;
 
 public class BibtexImport extends JPanel implements ActionListener{
 
-	private String VERSION = "1.1";
+	private String VERSION = "1.2";
 	/**
 	 * 
 	 */
@@ -198,39 +198,18 @@ public class BibtexImport extends JPanel implements ActionListener{
 				return;
 			JFileChooser fc = new JFileChooser(BibtexPrefs.getLastDir());
 			fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
-			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
-				openFile = fc.getSelectedFile();
-				openFile(openFile);
-			}	
+			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+				openFile(fc.getSelectedFile());
 		}
 		else if (action.getSource() == saveMenu || action.getSource() == saveAsMenu){
 			if(openFile == null || action.getSource() == saveAsMenu){
 				JFileChooser fc = new JFileChooser(BibtexPrefs.getLastDir());
 				fc.setFileFilter(new FileNameExtensionFilter("Bibtex Files", "bib"));
-				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
-					try {
-						local.saveFile(fc.getSelectedFile());
-						openFile = fc.getSelectedFile();
-						BibtexPrefs.addOpenedFile(openFile);
-						populateRecentMenu();
-						frame.setTitle(openFile.getName());
-						edit = false;
-					} catch (IOException e) {
-						e.printStackTrace();
-						errorDialog(e.toString());
-					}
-				}
-				else 
-					return;
+				if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
+					saveFile(fc.getSelectedFile());
+				return;
 			}
-			try {
-				local.saveFile(openFile);
-				frame.setTitle(openFile.getName());
-				edit = false;
-			} catch (IOException e) {
-				e.printStackTrace();
-				errorDialog(e.toString());
-			}
+			saveFile(openFile);
 		}
 		else if (action.getSource() == searchButton){
 			Document doc;
@@ -286,6 +265,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 	private void openFile(File file){
 		try {
 			local.openFile(file);
+			openFile = file;
 			frame.setTitle(file.getName());
 			edit = false;
 			BibtexPrefs.addOpenedFile(file);
@@ -294,7 +274,9 @@ public class BibtexImport extends JPanel implements ActionListener{
 			e.printStackTrace();
 			errorDialog(e.toString());
 		} catch (IllegalArgumentException e){
-			errorDialog("The bibtex file " +file.getPath()+ " appears to be invalid");
+			errorDialog("The bibtex file " +file.getPath()+ " appears to be invalid.\n"
+					+ "Parsing error occured because you have the following in your file:\n"
+					+e.getMessage());
 		}
 	}
 	
