@@ -70,12 +70,23 @@ public class Citation {
 		return ret;
 	}
 	/**
+	 * Removes end line characters and extra spaces.
+	 * @param line
+	 * @return
+	 */
+	private String formatString(String line){
+		String ret = line.replaceAll("\\r\\n|\\n|\\r", " ");
+		while(ret.indexOf("  ") != -1)
+			ret = ret.replaceAll("  ", " ");
+		return ret;
+	}
+	/**
 	 * Parses one bibtex entry.
 	 * @param bib
 	 */
 
 	public void parse (String parseIn) throws IllegalArgumentException{
-		String bib = parseIn;
+		String bib = formatString(parseIn);
 		if(bib.lastIndexOf('}') == -1)
 			throw new IllegalArgumentException(parseIn);
 		int balance, it;
