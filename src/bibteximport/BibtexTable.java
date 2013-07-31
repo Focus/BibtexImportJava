@@ -68,7 +68,6 @@ public class BibtexTable implements TableModelListener {
 			model.addRow(entry);
 		}
 	}
-	@Override
 	public void tableChanged(TableModelEvent tme) {
 		switch(tme.getType()){
 		case TableModelEvent.UPDATE:
@@ -143,7 +142,6 @@ public class BibtexTable implements TableModelListener {
 	
 	public void orderByColumn(final String label){
 		Comparator<Citation> comp = new Comparator<Citation>(){
-			@Override
 			public int compare(Citation cite0, Citation cite1) {
 				String ent0 = cite0.getString(label);
 				String ent1 = cite1.getString(label);

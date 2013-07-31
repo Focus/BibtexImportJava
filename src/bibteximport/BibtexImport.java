@@ -123,7 +123,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 		local.table.getActionMap().put("delete", new AbstractAction(){
 			private static final long serialVersionUID = 1L;
 
-			@Override
 			public void actionPerformed(ActionEvent ae) {
 				local.removeSelected();
 			}
@@ -131,7 +130,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 		
 
 		local.model.addTableModelListener(new TableModelListener(){
-			@Override
 			public void tableChanged(TableModelEvent tme) {
 				if(!edit)
 					frame.setTitle("*"+frame.getTitle());
@@ -144,7 +142,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 		remote.table.getActionMap().put("enter", new AbstractAction(){
 			private static final long serialVersionUID = 1L;
 
-			@Override
 			public void actionPerformed(ActionEvent ae) {
 				addButton.doClick();
 			}
@@ -154,7 +151,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 		searchTitle.getActionMap().put("enter", new AbstractAction(){
 			private static final long serialVersionUID = 1L;
 
-			@Override
 			public void actionPerformed(ActionEvent ae) {
 				searchButton.doClick();
 			}
@@ -163,7 +159,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 		searchAuthor.getActionMap().put("enter", new AbstractAction(){
 			private static final long serialVersionUID = 1L;
 
-			@Override
 			public void actionPerformed(ActionEvent ae) {
 				searchButton.doClick();
 			}
