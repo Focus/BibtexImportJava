@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -44,6 +45,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -56,10 +59,14 @@ public class BibtexImport extends JPanel implements ActionListener{
 
 	private String VERSION = "1.3";
 	private String WEBSITE = "https://sourceforge.net/projects/bibteximport/";
+	private boolean MAC = System.getProperty("os.name").toLowerCase().indexOf("mac") != -1 ? true:false; 
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	
 
 	private static JFrame frame;
 
@@ -165,12 +172,22 @@ public class BibtexImport extends JPanel implements ActionListener{
 		});
 
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		if(MAC){
+			@SuppressWarnings("unused")
+			MacQuit macIsAnnoying = new MacQuit(new Callable<Boolean>(){
+
+				public Boolean call() throws Exception {
+					return nagForSave();
+				}
+			});
+		}
 		frame.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent ev){
 				if(nagForSave())
 					frame.dispose();
 			}
 		});
+		
 		URL imgURL = getClass().getResource("icon.png");
 		if(imgURL != null){
 			ImageIcon icon = new ImageIcon(imgURL);
@@ -289,18 +306,23 @@ public class BibtexImport extends JPanel implements ActionListener{
 
 	private void createMenuBar(){
 		menu = new JMenuBar();
+		int ctrl;
+		if(MAC)
+			ctrl = ActionEvent.META_MASK;
+		else
+			ctrl = ActionEvent.CTRL_MASK;
 
 		JMenu fileMenu = new JMenu("File");
 		newMenu = new JMenuItem("New");
-		newMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+		newMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ctrl));
 		newMenu.addActionListener(this);
 		openMenu = new JMenuItem("Open");
-		openMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+		openMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ctrl));
 		openMenu.addActionListener(this);
 		recentMenu = new JMenu("Open Recent");
 		populateRecentMenu();
 		saveMenu = new JMenuItem("Save");
-		saveMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		saveMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ctrl));
 		saveMenu.addActionListener(this);
 		saveAsMenu = new JMenuItem("Save As...");
 		saveAsMenu.addActionListener(this);
@@ -371,7 +393,6 @@ public class BibtexImport extends JPanel implements ActionListener{
 	private static void createGUI(){
 		frame = new JFrame("Untitled");
 		
-		
 		BibtexImport bib = new BibtexImport();
 		bib.setOpaque(true);
 		
@@ -384,6 +405,19 @@ public class BibtexImport extends JPanel implements ActionListener{
 	}
 
 	public static void main(String[] args) {
+		System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Bibtex Import");
+        try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 		javax.swing.SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				createGUI();
