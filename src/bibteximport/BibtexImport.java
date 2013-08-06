@@ -173,11 +173,17 @@ public class BibtexImport extends JPanel implements ActionListener{
 
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		if(MAC){
-			@SuppressWarnings("unused")
 			MacQuit macIsAnnoying = new MacQuit(new Callable<Boolean>(){
 
 				public Boolean call() throws Exception {
 					return nagForSave();
+				}
+			});
+			macIsAnnoying.setAboutMenu(new Callable<Void>(){
+
+				public Void call() throws Exception {
+					showAboutMenu();
+					return null;
 				}
 			});
 		}
@@ -332,22 +338,29 @@ public class BibtexImport extends JPanel implements ActionListener{
 		fileMenu.add(saveMenu);
 		fileMenu.add(saveAsMenu);
 
-		JMenu helpMenu = new JMenu("Help");
-		JMenuItem aboutMenuI = new JMenuItem("About");
-		aboutMenuI.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frame,
-						"Bibtex Import\n"
-								+ "Copyright(c) Bati Sengul 2013\n"
-								+ "Version: " + VERSION + "\n"
-								+ "Wesbite: " + WEBSITE
-								,"About",JOptionPane.INFORMATION_MESSAGE);
-			}		
-		});
-		helpMenu.add(aboutMenuI);
+		if(!MAC){
+			JMenu helpMenu = new JMenu("Help");
+			JMenuItem aboutMenuI = new JMenuItem("About");
+
+			aboutMenuI.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					showAboutMenu();
+				}		
+			});
+			helpMenu.add(aboutMenuI);
+			menu.add(helpMenu);
+		}
 
 		menu.add(fileMenu);
-		menu.add(helpMenu);
+	}
+	
+	private void showAboutMenu(){
+		JOptionPane.showMessageDialog(frame,
+				"Bibtex Import\n"
+						+ "Copyright(c) Bati Sengul 2013\n"
+						+ "Version: " + VERSION + "\n"
+						+ "Wesbite: " + WEBSITE
+						,"About",JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	private void errorDialog(String error){
@@ -405,8 +418,14 @@ public class BibtexImport extends JPanel implements ActionListener{
 	}
 
 	public static void main(String[] args) {
+		
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Bibtex Import");
+        System.setProperty("apple.awt.brushMetalLook","true");
+		System.setProperty("apple.awt.antialiasing","on");
+		System.setProperty("apple.awt.textantialiasing","on");
+		
+        
         try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {

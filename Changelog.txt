@@ -1,7 +1,10 @@
 Bati Sengul (c) 2013
 
 == Changes from 1.2 to 1.3 ==
-* Bug fix: any text in bibtex that doesn't begin with @ is now treated like a comment. 
+* Feature: compatibility with OS X.
+* Feature: Java 1.5+ requirement instead of 1.7.
+* Bug fix: any text in bibtex that doesn't begin with @ is now treated like a comment.
+* Bug fix: extra spaces from the bibtex file are now erased.
 
 == Changes from 1.1 to 1.2 ==
 * Feature: remembers the latest opened files.
