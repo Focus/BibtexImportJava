@@ -82,7 +82,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 	private boolean edit = false;
 
 	public BibtexImport(){
-		labels = new String[]{"name","type","title","author","year"};
+		labels = BibtexPrefs.getLabels();
 
 		searchAuthor = new JTextField();
 		searchAuthor.setColumns(17);
@@ -245,7 +245,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				errorDialog(e.toString());
 				return;
 			}
-			remote.addCitations(doc.select("pre").html());
+			remote.addCitations(Jsoup.parse(doc.select("pre").html()).text());
 		}
 		else if(action.getSource() == addButton){
 			int[] rows = remote.table.getSelectedRows();

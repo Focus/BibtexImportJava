@@ -53,4 +53,8 @@ public class BibtexPrefs {
 		if(dir.exists() && dir.isDirectory())
 			prefs.put("lastDir", dir.getPath());
 	}
+	
+	public static String[] getLabels(){
+		return new String[]{"name","type","title","author","year"};
+	}
 }
