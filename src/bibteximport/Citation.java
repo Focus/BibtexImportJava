@@ -18,45 +18,77 @@ package bibteximport;
 
 
 import java.util.Vector;
-
+/**
+ * A class for storing a single BibTex citation
+ * @author Bati Sengul
+ */
 public class Citation {
-	public String name, type;
+	/**
+	 * The key of the citation: e.g if the citation is {@code @article{test, title={Something}}} then the key is {@code test}.
+	 */
+	public String key;
+	/**
+	 * The type of the citation: e.g if the citation is {@code @article{test, title={Something}}} then the type is {@code article}.
+	 */
+	public String type;
+	/**
+	 * The rest of the BibTex items go here. For example if the citation is {@code @article{test, title={Something}, author={Someone}}} 
+	 * then {@code properties} will contain two {@code String[2]} items. One of which will be {@code ["title","Something"]} and the other 
+	 * {@code ["author, "Someone"]}.
+	 */
 	public Vector<String[]> properties;
 
 	public Citation(){
-		name = new String();
+		key = new String();
 		type = new String();
 		properties = new Vector<String[]>();
 	}
 
+	/**
+	 * Constructor using a BibTex citation.
+	 * @param bib a BibTex citation, e.g.  {@code @article{test, title={Something}, author={Someone}}}
+	 */
 	public Citation(String bib){
 		this.properties = new Vector<String[]>();
 		this.parse(bib);
 	}
+	/**
+	 * Gets the string corresponding to the field: e.g. if the citation is  {@code @article{test, title={Something}, author={Someone}}}, 
+	 * then {@code getString("author")} will return {@code "Someone"}.
+	 * @param field the name of the field
+	 * @return Value of the field corresponding to the name
+	 * @see Citation#replaceString
+	 */
 
-	public String getString(String name){
-		if(name.compareToIgnoreCase("name") == 0)
-			return this.name;
-		else if (name.compareToIgnoreCase("type") == 0)
+	public String getString(String field){
+		if(field.compareToIgnoreCase("key") == 0)
+			return this.key;
+		else if (field.compareToIgnoreCase("type") == 0)
 			return this.type;
 		for(String[] prop : properties){
-			if(name.compareToIgnoreCase(prop[0]) == 0)
+			if(field.compareToIgnoreCase(prop[0]) == 0)
 				return prop[1];
 		}
 		return null;
 	}
-	
-	public void replaceString(String name, String value){
-		if(name.compareToIgnoreCase("name") == 0){
-			this.name = value;
+	/**
+	 * Replaces the string corresponding to the field: e.g. if the citation is  {@code @article{test, title={Something}, author={Someone}}}, 
+	 * then {@code getString("author", "Someone else")} will change the citation to {@code @article{test, title={Something}, author={Someone else}}}.
+	 * @param field the name of the field
+	 * @param value the new value
+	 * @see Citation#getString
+	 */	
+	public void replaceString(String field, String value){
+		if(field.compareToIgnoreCase("name") == 0){
+			this.key = value;
 			return;
 		}
-		else if (name.compareToIgnoreCase("type") == 0){
+		else if (field.compareToIgnoreCase("type") == 0){
 			this.type = value;
 			return;
 		}
 		for(String[] prop : properties){
-			if(name.compareToIgnoreCase(prop[0]) == 0)
+			if(field.compareToIgnoreCase(prop[0]) == 0)
 				prop[1] = value;
 		}
 	}
@@ -66,7 +98,7 @@ public class Citation {
 	 */
 	
 	public String asString(){
-		String ret ="@" + this.type + "{" + this.name + ",\n";
+		String ret ="@" + this.type + "{" + this.key + ",\n";
 		for(String[] prop : properties)
 			ret += "    " + prop[0] + " = {" + prop[1] + "},\n";
 		ret = ret.substring(0, ret.length() - 2);
@@ -85,8 +117,8 @@ public class Citation {
 		return ret;
 	}
 	/**
-	 * Parses a BibTex entry from a string. The entry does not need to start with an \@.
-	 * @param parseIn a string which is the BibTex entry, e.g. "article{key, title = {Hello}}"
+	 * Parses a BibTex entry from a string. The entry does not need to start with an @.
+	 * @param parseIn a string which is the BibTex entry, e.g.  {@code article{test, title={Something}, author={Someone}}}
 	 * @throws IllegalArgumentException if the input is not a valid BibTex enrty
 	 */
 
@@ -117,7 +149,7 @@ public class Citation {
 		index2 = bib.indexOf(',');
 		if(index != -1 && index2 > index && index2 < bib.length()-1 ){
 			type = bib.substring(0,index);
-			name = bib.substring(index + 1, index2);
+			key = bib.substring(index + 1, index2);
 		}
 		else
 			throw new IllegalArgumentException(parseIn);

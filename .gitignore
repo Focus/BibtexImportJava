@@ -10,3 +10,4 @@ target/classes/bibteximport/BibtexImport$1.class
 target/classes/bibteximport/icon.png
 
 bin/
+/target

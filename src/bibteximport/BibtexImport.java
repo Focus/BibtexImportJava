@@ -88,6 +88,10 @@ public class BibtexImport extends JPanel implements ActionListener{
 		searchAuthor.setColumns(17);
 		searchTitle = new JTextField();
 		searchTitle.setColumns(17);
+		
+		searchAuthor.addMouseListener(new RightClick());
+		searchTitle.addMouseListener(new RightClick());
+		
 		JPanel searches = new JPanel();
 		searches.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		searches.add(new JLabel("Author"));

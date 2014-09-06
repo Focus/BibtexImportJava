@@ -55,6 +55,6 @@ public class BibtexPrefs {
 	}
 	
 	public static String[] getLabels(){
-		return new String[]{"name","type","title","author","year"};
+		return new String[]{"Key","Type","Title","Author","Year"};
 	}
 }
