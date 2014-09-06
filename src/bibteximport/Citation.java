@@ -91,15 +91,19 @@ public class Citation {
 			throw new IllegalArgumentException(parseIn);
 		int balance, it;
 		balance = 1;
-		it = bib.indexOf('{') + 1;
+		char delim = '{';
+		/* Find out if the entries are like title="Some title" or title={Some title} */
+		if (bib.indexOf('{') == -1 || (bib.indexOf('"') != -1 && bib.indexOf('"') < bib.indexOf('{')) )
+			delim = '"';
+		it = bib.indexOf(delim) + 1;
 		if(it == -1)
 			throw new IllegalArgumentException(parseIn);
 		while(balance > 0){
 			if(it == bib.length())
 				throw new IllegalArgumentException(parseIn);
-			if(bib.charAt(it) == '{')
+			if(bib.charAt(it) == delim)
 				balance++;
-			else if(bib.charAt(it) == '}')
+			else if(bib.charAt(it) == delim)
 				balance--;
 			it++;
 		}
