@@ -60,6 +60,10 @@ public class Citation {
 				prop[1] = value;
 		}
 	}
+	/**
+	 * Formats the Citation as a string.
+	 * @return The citation as a string
+	 */
 	
 	public String asString(){
 		String ret ="@" + this.type + "{" + this.name + ",\n";
@@ -71,8 +75,8 @@ public class Citation {
 	}
 	/**
 	 * Removes end line characters and extra spaces.
-	 * @param line
-	 * @return
+	 * @param line a string to be formated
+	 * @return 	   The formated string
 	 */
 	private String formatString(String line){
 		String ret = line.replaceAll("\\r\\n|\\n|\\r", " ");
@@ -81,8 +85,9 @@ public class Citation {
 		return ret;
 	}
 	/**
-	 * Parses one bibtex entry.
-	 * @param bib
+	 * Parses a BibTex entry from a string. The entry does not need to start with an \@.
+	 * @param parseIn a string which is the BibTex entry, e.g. "article{key, title = {Hello}}"
+	 * @throws IllegalArgumentException if the input is not a valid BibTex enrty
 	 */
 
 	public void parse (String parseIn) throws IllegalArgumentException{
@@ -91,24 +96,22 @@ public class Citation {
 			throw new IllegalArgumentException(parseIn);
 		int balance, it;
 		balance = 1;
-		char delim = '{';
-		/* Find out if the entries are like title="Some title" or title={Some title} */
-		if (bib.indexOf('{') == -1 || (bib.indexOf('"') != -1 && bib.indexOf('"') < bib.indexOf('{')) )
-			delim = '"';
-		it = bib.indexOf(delim) + 1;
+		it = bib.indexOf('{') + 1;
 		if(it == -1)
 			throw new IllegalArgumentException(parseIn);
+		/* Find the content of the BibTex entry: article{ We want this stuff }
+		 * We also have to check that the number of { and the number of } are the same. 
+		 */
 		while(balance > 0){
 			if(it == bib.length())
 				throw new IllegalArgumentException(parseIn);
-			if(bib.charAt(it) == delim)
+			if(bib.charAt(it) == '{' && bib.charAt(it-1) != '\\')
 				balance++;
-			else if(bib.charAt(it) == delim)
+			else if(bib.charAt(it) == '}' && bib.charAt(it-1) != '\\')
 				balance--;
 			it++;
 		}
 		bib = bib.substring(0,it-1);
-
 		int index, index2;
 		index = bib.indexOf('{');
 		index2 = bib.indexOf(',');
@@ -118,30 +121,53 @@ public class Citation {
 		}
 		else
 			throw new IllegalArgumentException(parseIn);
+		
 		bib = bib.substring(index2 + 1);
-
+		/*
+		 * If originally parseIn is article{key, title = {Hello}, author = {me}}   
+		 * bib is  title = {Hello}, author = {me}
+		 */
+		char delim;
 		while(bib.indexOf('{') != -1){
 			String[] prop = new String[2];
 			index = bib.indexOf('=');
 			if(index == -1)
 				break;
 			prop[0] = bib.substring(0,index).trim();
-
-			index = bib.indexOf('{');
-			if(index == -1)
+			
+			if(bib.indexOf('"') != -1 && (bib.indexOf('{') == -1 || bib.indexOf('{') > bib.indexOf('"')) ){
+				index = bib.indexOf('"');
+				delim = '"';
+			}
+			else if (bib.indexOf('{') != -1){
+				index = bib.indexOf('{');
+				delim= '{';
+			}
+			else
 				break;
+			
 			bib = bib.substring(index + 1);
-
 			balance = 1;
 			it = 0;
-			while(balance > 0){
-				if(it == bib.length())
-					throw new IllegalArgumentException(parseIn);
-				if(bib.charAt(it) == '{')
-					balance++;
-				else if(bib.charAt(it) == '}')
-					balance--;
-				it++;
+			if(delim == '"'){
+				while(true){
+					if(it == bib.length())
+						throw new IllegalArgumentException(parseIn);
+					if(bib.charAt(it) == '"' && (it == 0 || bib.charAt(it-1) != '\\') )
+						break;
+					it++;
+				}
+			}
+			else{
+				while(balance > 0){
+					if(it == bib.length())
+						throw new IllegalArgumentException(parseIn);
+					if(bib.charAt(it) == '{' && (it == 0 || bib.charAt(it-1) != '\\') )
+						balance++;
+					else if(bib.charAt(it) == '}' && (it == 0 || bib.charAt(it-1) != '\\') )
+						balance--;
+					it++;
+				}
 			}
 			prop[1] = bib.substring(0,it - 1);
 			properties.add(prop);

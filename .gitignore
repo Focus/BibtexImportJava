@@ -1,0 +1,12 @@
+
+*.jar
+
+target/classes/bibteximport/BibtexImport.class
+
+target/classes/bibteximport/BibtexImport$1.class
+
+*.class
+
+target/classes/bibteximport/icon.png
+
+bin/
