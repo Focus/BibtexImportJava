@@ -16,6 +16,7 @@
 
 package bibteximport;
 
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -56,11 +58,15 @@ public class BibtexTable implements TableModelListener {
 		table = new JTable(model);
 		table.getTableHeader().addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent ev){
+				if(ev.getModifiers() != InputEvent.BUTTON1_MASK)
+					return;
 				int col = table.columnAtPoint(ev.getPoint());
 				if(col >= 0 && col < labels.length)
 					orderByColumn(labels[col]);
 			}
 		});
+		DefaultCellEditor dce = (DefaultCellEditor) table.getDefaultEditor(Object.class);
+		dce.getComponent().addMouseListener(new RightClick());
 		this.order = 1;
 	}
 	/**
@@ -75,20 +81,28 @@ public class BibtexTable implements TableModelListener {
 			model.addRow(entry);
 		}
 	}
+	/**
+	 * Resets the labels on top of the table
+	 * @param labelsIn an array of new labels
+	 */
+	public void resetLabels(String[] labelsIn){
+		this.labels = labelsIn;
+		model.setColumnIdentifiers(labels);
+		model = new DefaultTableModel(labels,1);
+		this.resetTable();
+	}
 	
 	/**
 	 * Detects if the user has edited something in one of the tables.
 	 */
 	public void tableChanged(TableModelEvent tme) {
-		switch(tme.getType()){
-		case TableModelEvent.UPDATE:
+		if(tme.getType() == TableModelEvent.UPDATE){
 			int row = tme.getFirstRow();
 			int column = tme.getColumn();
 			String entry = (String) model.getValueAt(row, column);
 			if(row < citations.size())
 				citations.get(row).replaceString(labels[column], entry);
 			resetTable();
-			break;
 		}
 			
 	}

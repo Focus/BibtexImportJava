@@ -55,18 +55,25 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+/**
+ * 
+ * This class creates the main window.
+ * @author Bati Sengul
+ *
+ */
 public class BibtexImport extends JPanel implements ActionListener{
 
 	private String VERSION = "1.3";
 	private String WEBSITE = "https://sourceforge.net/projects/bibteximport/";
 	private boolean MAC = System.getProperty("os.name").toLowerCase().indexOf("mac") != -1 ? true:false; 
-	
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	
+
+
+	private static ImageIcon icon;
 
 	private static JFrame frame;
 
@@ -79,6 +86,8 @@ public class BibtexImport extends JPanel implements ActionListener{
 	private JMenu recentMenu;
 	private JMenuItem[] recentMenuItems;
 	private JMenuItem newMenu, openMenu, saveMenu, saveAsMenu;
+	private JMenuItem preferencesMenu;
+	private JScrollPane localScroll, remoteScroll;
 	private boolean edit = false;
 
 	public BibtexImport(){
@@ -88,10 +97,10 @@ public class BibtexImport extends JPanel implements ActionListener{
 		searchAuthor.setColumns(17);
 		searchTitle = new JTextField();
 		searchTitle.setColumns(17);
-		
+
 		searchAuthor.addMouseListener(new RightClick());
 		searchTitle.addMouseListener(new RightClick());
-		
+
 		JPanel searches = new JPanel();
 		searches.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		searches.add(new JLabel("Author"));
@@ -109,13 +118,13 @@ public class BibtexImport extends JPanel implements ActionListener{
 		searchPanel.add(searchButton);
 
 		local = new BibtexTable(labels);
-		JScrollPane localScroll = new JScrollPane(local.table);
+		localScroll = new JScrollPane(local.table);
 
 		addButton = new JButton("Add >>");
 		addButton.addActionListener(this);
 
 		remote = new BibtexTable(labels);
-		JScrollPane remoteScroll = new JScrollPane(remote.table);
+		remoteScroll = new JScrollPane(remote.table);
 
 		JPanel bigPanel = new JPanel();
 		bigPanel.setLayout(new BoxLayout(bigPanel, BoxLayout.X_AXIS));
@@ -138,7 +147,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				local.removeSelected();
 			}
 		});
-		
+
 
 		local.model.addTableModelListener(new TableModelListener(){
 			public void tableChanged(TableModelEvent tme) {
@@ -147,7 +156,7 @@ public class BibtexImport extends JPanel implements ActionListener{
 				edit = true;
 			}
 		});
-		
+
 
 		remote.table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");
 		remote.table.getActionMap().put("enter", new AbstractAction(){
@@ -197,15 +206,14 @@ public class BibtexImport extends JPanel implements ActionListener{
 					frame.dispose();
 			}
 		});
-		
+
 		URL imgURL = getClass().getResource("icon.png");
 		if(imgURL != null){
-			ImageIcon icon = new ImageIcon(imgURL);
+			icon = new ImageIcon(imgURL);
 			frame.setIconImage(icon.getImage());
 		}
-		createMenuBar();
+		createContextMenu();
 	}
-
 
 	public void actionPerformed(ActionEvent action){
 		if(action.getSource() == newMenu){
@@ -257,6 +265,24 @@ public class BibtexImport extends JPanel implements ActionListener{
 				local.add(remote.citeAt(i));
 			local.resetTable();
 		}
+		else if(action.getSource() == preferencesMenu){
+			String oldLabels = "";
+			String[] oLabels = BibtexPrefs.getLabels();
+			for(String label: oLabels)
+				oldLabels += label + ",";
+			oldLabels = oldLabels.substring(0,oldLabels.length()-1);
+			String newLabels = (String)JOptionPane.showInputDialog(frame,
+					"Enter the labels seperated by commas",
+					"Labels",
+                    JOptionPane.PLAIN_MESSAGE,null,null, oldLabels);
+			if(newLabels != null){
+				boolean oldEdit = edit;
+				BibtexPrefs.setLabels(newLabels);
+				local.resetLabels(newLabels.split(","));
+				remote.resetLabels(newLabels.split(","));
+				edit = oldEdit;
+			}
+		}
 		else{
 			Object obj = action.getSource();
 			for(JMenuItem jmi : recentMenuItems){
@@ -273,6 +299,10 @@ public class BibtexImport extends JPanel implements ActionListener{
 			}
 		}
 	}
+	/**
+	 * Saves the local table as a file
+	 * @param file a file to save to
+	 */
 	private void saveFile(File file){
 		try {
 			local.saveFile(file);
@@ -284,7 +314,11 @@ public class BibtexImport extends JPanel implements ActionListener{
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Opens a file and displays it on the local table.
+	 * @param file a file to be opened
+	 */
 	private void openFile(File file){
 		try {
 			local.openFile(file);
@@ -302,7 +336,10 @@ public class BibtexImport extends JPanel implements ActionListener{
 					+e.getMessage());
 		}
 	}
-	
+
+	/**
+	 * Adds all the recently opened files to the context menu.
+	 */
 	private void populateRecentMenu(){
 		recentMenu.removeAll();
 		String[] files = BibtexPrefs.getOpenedFiles();
@@ -314,7 +351,10 @@ public class BibtexImport extends JPanel implements ActionListener{
 		}
 	}
 
-	private void createMenuBar(){
+	/**
+	 * Creates the context menu
+	 */
+	private void createContextMenu(){
 		menu = new JMenuBar();
 		int ctrl;
 		if(MAC)
@@ -342,6 +382,15 @@ public class BibtexImport extends JPanel implements ActionListener{
 		fileMenu.add(saveMenu);
 		fileMenu.add(saveAsMenu);
 
+		menu.add(fileMenu);
+
+		JMenu editMenu = new JMenu("Edit");
+		preferencesMenu = new JMenuItem("Preferences");
+		preferencesMenu.addActionListener(this);
+		editMenu.add(preferencesMenu);
+
+		menu.add(editMenu);
+
 		if(!MAC){
 			JMenu helpMenu = new JMenu("Help");
 			JMenuItem aboutMenuI = new JMenuItem("About");
@@ -354,23 +403,25 @@ public class BibtexImport extends JPanel implements ActionListener{
 			helpMenu.add(aboutMenuI);
 			menu.add(helpMenu);
 		}
-
-		menu.add(fileMenu);
 	}
-	
+
 	private void showAboutMenu(){
-		JOptionPane.showMessageDialog(frame,
-				"Bibtex Import\n"
-						+ "Copyright(c) Bati Sengul 2013\n"
-						+ "Version: " + VERSION + "\n"
-						+ "Wesbite: " + WEBSITE
-						,"About",JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(frame, "Bibtex Import\n"
+				+ "Copyright(c) Bati Sengul 2013\n"
+				+ "Version: " + VERSION + "\n"
+				+ "Wesbite: " + WEBSITE,
+				"About",						
+				JOptionPane.INFORMATION_MESSAGE,icon);
 	}
 
 	private void errorDialog(String error){
 		JOptionPane.showMessageDialog(frame,error,"Error",JOptionPane.ERROR_MESSAGE);
 	}
 
+	/**
+	 * Displays a popup asking if the user wishes to save the current file.
+	 * @return {@code true} when the user wishes to save or discard it, {@code false} if the user presses cancel
+	 */
 	private boolean nagForSave(){
 		if(edit){
 			String name = frame.getTitle();
@@ -407,30 +458,32 @@ public class BibtexImport extends JPanel implements ActionListener{
 	}
 
 
+	/**
+	 * Creates the main window
+	 */
 	private static void createGUI(){
 		frame = new JFrame("Untitled");
-		
+
 		BibtexImport bib = new BibtexImport();
 		bib.setOpaque(true);
-		
+
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setContentPane(bib);
 		frame.setJMenuBar(bib.menu);
 		frame.pack();
 		frame.setVisible(true);
-
 	}
 
 	public static void main(String[] args) {
-		
+
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Bibtex Import");
-        System.setProperty("apple.awt.brushMetalLook","true");
+		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Bibtex Import");
+		System.setProperty("apple.awt.brushMetalLook","true");
 		System.setProperty("apple.awt.antialiasing","on");
 		System.setProperty("apple.awt.textantialiasing","on");
-		
-        
-        try {
+
+
+		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();

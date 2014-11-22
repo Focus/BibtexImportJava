@@ -79,16 +79,16 @@ public class Citation {
 	 * @see Citation#getString
 	 */	
 	public void replaceString(String field, String value){
-		if(field.compareToIgnoreCase("name") == 0){
+		if(field.equalsIgnoreCase("key")){
 			this.key = value;
 			return;
 		}
-		else if (field.compareToIgnoreCase("type") == 0){
+		else if (field.equalsIgnoreCase("type")){
 			this.type = value;
 			return;
 		}
 		for(String[] prop : properties){
-			if(field.compareToIgnoreCase(prop[0]) == 0)
+			if(field.equalsIgnoreCase(prop[0]))
 				prop[1] = value;
 		}
 	}

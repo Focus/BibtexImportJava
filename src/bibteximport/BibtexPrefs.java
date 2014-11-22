@@ -54,7 +54,15 @@ public class BibtexPrefs {
 			prefs.put("lastDir", dir.getPath());
 	}
 	
+	public static void setLabels(String labels){
+		prefs.put("labels", labels);
+	}
+	
 	public static String[] getLabels(){
-		return new String[]{"Key","Type","Title","Author","Year"};
+		String labels = prefs.get("labels", null);
+		if(labels == null)
+			return new String[]{"Key","Type","Title","Author","Year"};
+		else
+			return labels.split(",");
 	}
 }

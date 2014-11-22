@@ -12,138 +12,131 @@ import javax.swing.JPopupMenu;
 import javax.swing.text.JTextComponent;
 
 public class RightClick extends MouseAdapter {
-    private JPopupMenu popup = new JPopupMenu();
+	private JPopupMenu popup = new JPopupMenu();
 
-    private AbstractAction cutAction;
-    private AbstractAction copyAction;
-    private AbstractAction pasteAction;
-    private AbstractAction undoAction;
-    private AbstractAction selectAllAction;
+	private AbstractAction cutAction;
+	private AbstractAction copyAction;
+	private AbstractAction pasteAction;
+	private AbstractAction undoAction;
+	private AbstractAction selectAllAction;
 
-    private JTextComponent textComponent;
-    private String savedString = "";
-    private Actions lastActionSelected;
+	private JTextComponent component;
+	private String savedString = "";
+	private Actions lastActionSelected;
 
-    private enum Actions { UNDO, CUT, COPY, PASTE, SELECT_ALL };
+	private enum Actions { UNDO, CUT, COPY, PASTE, SELECT_ALL };
 
-    public RightClick() {
-        undoAction = new AbstractAction("Undo") {
+	public RightClick() {
+		undoAction = new AbstractAction("Undo") {
 
-            /**
+			/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
-			@Override
-            public void actionPerformed(ActionEvent ae) {
-                    textComponent.setText("");
-                    textComponent.replaceSelection(savedString);
+			public void actionPerformed(ActionEvent ae) {
+				component.setText("");
+				component.replaceSelection(savedString);
 
-                    lastActionSelected = Actions.UNDO;
-            }
-        };
+				lastActionSelected = Actions.UNDO;
+			}
+		};
 
-        popup.add(undoAction);
-        popup.addSeparator();
+		popup.add(undoAction);
+		popup.addSeparator();
 
-        cutAction = new AbstractAction("Cut") {
+		cutAction = new AbstractAction("Cut") {
 
-            /**
+			/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
-			@Override
-            public void actionPerformed(ActionEvent ae) {
-                lastActionSelected = Actions.CUT;
-                savedString = textComponent.getText();
-                textComponent.cut();
-            }
-        };
+			public void actionPerformed(ActionEvent ae) {
+				lastActionSelected = Actions.CUT;
+				savedString = component.getText();
+				component.cut();
+			}
+		};
 
-        popup.add(cutAction);
+		popup.add(cutAction);
 
-        copyAction = new AbstractAction("Copy") {
+		copyAction = new AbstractAction("Copy") {
 
-            /**
+			/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
-			@Override
-            public void actionPerformed(ActionEvent ae) {
-                lastActionSelected = Actions.COPY;
-                textComponent.copy();
-            }
-        };
+			public void actionPerformed(ActionEvent ae) {
+				lastActionSelected = Actions.COPY;
+				component.copy();
+			}
+		};
 
-        popup.add(copyAction);
+		popup.add(copyAction);
 
-        pasteAction = new AbstractAction("Paste") {
+		pasteAction = new AbstractAction("Paste") {
 
-            /**
+			/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
-			@Override
-            public void actionPerformed(ActionEvent ae) {
-                lastActionSelected = Actions.PASTE;
-                savedString = textComponent.getText();
-                textComponent.paste();
-            }
-        };
+			public void actionPerformed(ActionEvent ae) {
+				lastActionSelected = Actions.PASTE;
+				savedString = component.getText();
+				component.paste();
+			}
+		};
 
-        popup.add(pasteAction);
-        popup.addSeparator();
+		popup.add(pasteAction);
+		popup.addSeparator();
 
-        selectAllAction = new AbstractAction("Select All") {
+		selectAllAction = new AbstractAction("Select All") {
 
-            /**
+			/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
-			@Override
-            public void actionPerformed(ActionEvent ae) {
-                lastActionSelected = Actions.SELECT_ALL;
-                textComponent.selectAll();
-            }
-        };
+			public void actionPerformed(ActionEvent ae) {
+				lastActionSelected = Actions.SELECT_ALL;
+				component.selectAll();
+			}
+		};
 
-        popup.add(selectAllAction);
-    }
+		popup.add(selectAllAction);
+	}
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
-            if (!(e.getSource() instanceof JTextComponent)) {
-                return;
-            }
+	@Override
+	public void mouseClicked(MouseEvent ev) {
+		if (ev.getModifiers() != InputEvent.BUTTON3_MASK)
+			return;
+		
+		component = (JTextComponent) ev.getSource();
+		component.requestFocus();
 
-            textComponent = (JTextComponent) e.getSource();
-            textComponent.requestFocus();
+		boolean enabled = component.isEnabled();
+		boolean editable = component.isEditable();
+		boolean nonempty = !(component.getText() == null || component.getText().equals(""));
+		boolean marked = component.getSelectedText() != null;
 
-            boolean enabled = textComponent.isEnabled();
-            boolean editable = textComponent.isEditable();
-            boolean nonempty = !(textComponent.getText() == null || textComponent.getText().equals(""));
-            boolean marked = textComponent.getSelectedText() != null;
+		boolean pasteAvailable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null).isDataFlavorSupported(DataFlavor.stringFlavor);
 
-            boolean pasteAvailable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null).isDataFlavorSupported(DataFlavor.stringFlavor);
+		undoAction.setEnabled(enabled && editable && (lastActionSelected == Actions.CUT || lastActionSelected == Actions.PASTE));
+		cutAction.setEnabled(enabled && editable && marked);
+		copyAction.setEnabled(enabled && marked);
+		pasteAction.setEnabled(enabled && editable && pasteAvailable);
+		selectAllAction.setEnabled(enabled && nonempty);
 
-            undoAction.setEnabled(enabled && editable && (lastActionSelected == Actions.CUT || lastActionSelected == Actions.PASTE));
-            cutAction.setEnabled(enabled && editable && marked);
-            copyAction.setEnabled(enabled && marked);
-            pasteAction.setEnabled(enabled && editable && pasteAvailable);
-            selectAllAction.setEnabled(enabled && nonempty);
+		int nx = ev.getX();
 
-            int nx = e.getX();
+		if (nx > 500) {
+			nx = nx - popup.getSize().width;
+		}
 
-            if (nx > 500) {
-                nx = nx - popup.getSize().width;
-            }
+		popup.show(ev.getComponent(), nx, ev.getY() - popup.getSize().height);
+	}
 
-            popup.show(e.getComponent(), nx, e.getY() - popup.getSize().height);
-        }
-    }
 }
